@@ -1,6 +1,6 @@
-==============================
+
 README - PROJETO LORA + ESP32 ENVIANDO DADOS PARA UBIDOTS
-==============================
+=
 
 **DESCRIÇÃO DO PROJETO:**
 Este projeto utiliza um módulo ESP32 para simular dados de sensores (exemplo: temperatura) 
