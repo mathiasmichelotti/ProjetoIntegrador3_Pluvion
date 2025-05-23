@@ -63,6 +63,10 @@ void loop() {
 }
 
 
+### 🔴 Nó Sensor (ESP32 #1)
+Simula a leitura de um sensor (temperatura) e envia o valor em formato **JSON via LoRa**.
+
+```cpp
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <LoRa.h>
