@@ -27,3 +27,37 @@ Criar um sistema IoT com as seguintes funcionalidades:
 
 ## 📂 Estrutura do Projeto
 
+
+---
+
+## 🚀 Como Funciona
+
+### 🔴 Nó Sensor (ESP32 #1)
+Simula a leitura de um sensor (temperatura) e envia o valor em formato **JSON via LoRa**.
+
+```cpp
+#include <SPI.h>
+#include <LoRa.h>
+
+void setup() {
+  Serial.begin(115200);
+  if (!LoRa.begin(915E6)) {
+    Serial.println("Erro ao iniciar LoRa");
+    while (true);
+  }
+  Serial.println("LoRa emissor iniciado com sucesso!");
+}
+
+void loop() {
+  float temperatura = random(200, 300) / 10.0;
+  String dado = String("{\"temperatura\": ") + temperatura + "}";
+
+  LoRa.beginPacket();
+  LoRa.print(dado);
+  LoRa.endPacket();
+
+  Serial.print("Enviado via LoRa: ");
+  Serial.println(dado);
+
+  delay(5000);
+}
