@@ -20,15 +20,6 @@ no envio para a nuvem para monitoramento remoto.
 - Conta no Ubidots com token de acesso
 - Rede Wi-Fi com acesso à internet
 
-**ESTRUTURA DO PROJETO:**
-LoRa_Ubidots_Project/
-│
-├── LoRa_Ubidots.ino      - Código fonte para o ESP32
-├── README.txt            - Este arquivo de instruções
-├── LICENSE               - Licença do projeto (ex: MIT)
-├── docs/                 - Documentação e esquemas (opcional)
-├── data/                 - Dados simulados ou logs (opcional)
-└── lib/                  - Bibliotecas adicionais (opcional)
 
 **COMO USAR:**
 1. Instale a placa ESP32 no Arduino IDE (instruções no site oficial do ESP32).
