@@ -61,11 +61,11 @@ void loop() {
 
   delay(5000);
 }
-```cpp
 
+```
 
-### 🔴 Nó Sensor (ESP32 #1)
-Simula a leitura de um sensor (temperatura) e envia o valor em formato **JSON via LoRa**.
+### 🔴 Nó Sensor (ESP32 #2)
+Recebe os dados enviados do ESP1 e envia para a nuvem.
 
 ```cpp
 #include <WiFi.h>
@@ -130,7 +130,7 @@ void loop() {
 
   delay(100);
 }
-
+```
 
 
 
