@@ -61,6 +61,7 @@ void loop() {
 
   delay(5000);
 }
+```cpp
 
 
 ### 🔴 Nó Sensor (ESP32 #1)
