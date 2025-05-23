@@ -61,3 +61,71 @@ void loop() {
 
   delay(5000);
 }
+
+
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <LoRa.h>
+
+const char* ssid = "SEU_SSID";
+const char* password = "SUA_SENHA";
+
+const char* token = "SEU_TOKEN_UBIDOTS";
+const char* device_label = "esp32_gateway";
+const char* serverName = "http://industrial.api.ubidots.com/api/v1.6/devices/";
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi conectado!");
+
+  if (!LoRa.begin(915E6)) {
+    Serial.println("Erro ao iniciar LoRa");
+    while (true);
+  }
+  Serial.println("LoRa receptor iniciado com sucesso!");
+}
+
+void loop() {
+  int packetSize = LoRa.parsePacket();
+  if (packetSize) {
+    String dadoRecebido = "";
+    while (LoRa.available()) {
+      dadoRecebido += (char)LoRa.read();
+    }
+
+    Serial.print("Recebido via LoRa: ");
+    Serial.println(dadoRecebido);
+
+    if (WiFi.status() == WL_CONNECTED) {
+      HTTPClient http;
+      String url = String(serverName) + device_label;
+
+      http.begin(url);
+      http.addHeader("Content-Type", "application/json");
+      http.addHeader("X-Auth-Token", token);
+
+      int httpResponseCode = http.POST(dadoRecebido);
+
+      if (httpResponseCode > 0) {
+        Serial.print("Resposta Ubidots: ");
+        Serial.println(httpResponseCode);
+      } else {
+        Serial.print("Erro na requisição: ");
+        Serial.println(httpResponseCode);
+      }
+
+      http.end();
+    }
+  }
+
+  delay(100);
+}
+
+
+
+
