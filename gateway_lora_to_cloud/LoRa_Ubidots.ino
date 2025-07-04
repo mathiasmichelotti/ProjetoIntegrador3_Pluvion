@@ -6,37 +6,53 @@
 const char* ssid = "SEU_SSID";
 const char* password = "SUA_SENHA";
 
-// Token Ubidots
-const char* token = "BBUS-l0pk5p1D3LdkI108Ge3Tman5EXdfzg";
+// Token da API (ex.: Ubidots ou outro)
+const char* token = "SEU_TOKEN_API";
 
-// ID do seu dispositivo Ubidots
+// Nome do dispositivo na nuvem
 const char* device_label = "esp32_gateway";
 
-// URL do Ubidots
+// URL da API (ex.: Ubidots, Firebase, InfluxDB, etc.)
 const char* serverName = "http://industrial.api.ubidots.com/api/v1.6/devices/";
+
+void conectarWiFi() {
+  if (WiFi.status() == WL_CONNECTED) return;
+
+  Serial.print("Conectando ao Wi-Fi");
+  WiFi.begin(ssid, password);
+  int tentativas = 0;
+
+  while (WiFi.status() != WL_CONNECTED && tentativas < 10) {
+    delay(1000);
+    Serial.print(".");
+    tentativas++;
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\nWi-Fi conectado!");
+  } else {
+    Serial.println("\nFalha ao conectar no Wi-Fi.");
+  }
+}
 
 void setup() {
   Serial.begin(115200);
 
-  // Conecta ao Wi-Fi
-  WiFi.begin(ssid, password);
-  Serial.print("Conectando ao WiFi");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("\nWiFi conectado!");
+  // Conectar ao Wi-Fi
+  conectarWiFi();
 
-  // Inicializa LoRa
-  if (!LoRa.begin(915E6)) {
-    Serial.println("Erro ao iniciar LoRa");
-    while (true);
+  // Inicializar LoRa
+  while (!LoRa.begin(915E6)) {
+    Serial.println("Erro ao iniciar LoRa. Tentando novamente...");
+    delay(2000);
   }
 
   Serial.println("LoRa receptor iniciado com sucesso!");
 }
 
 void loop() {
+  conectarWiFi(); // Garante Wi-Fi conectado
+
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
     String dadoRecebido = "";
@@ -47,7 +63,7 @@ void loop() {
     Serial.print("Recebido via LoRa: ");
     Serial.println(dadoRecebido);
 
-    // Envia para Ubidots
+    // Enviar para a nuvem
     if (WiFi.status() == WL_CONNECTED) {
       HTTPClient http;
       String url = String(serverName) + device_label;
@@ -59,18 +75,18 @@ void loop() {
       int httpResponseCode = http.POST(dadoRecebido);
 
       if (httpResponseCode > 0) {
-        Serial.print("Resposta Ubidots: ");
+        Serial.print("Resposta da API: ");
         Serial.println(httpResponseCode);
       } else {
-        Serial.print("Erro na requisição: ");
+        Serial.print("Erro na requisição HTTP: ");
         Serial.println(httpResponseCode);
       }
 
       http.end();
     } else {
-      Serial.println("WiFi desconectado!");
+      Serial.println("Wi-Fi desconectado! Não foi possível enviar.");
     }
   }
 
-  delay(100);
+  delay(500); // Pequena pausa para evitar sobrecarga
 }
