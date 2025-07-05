@@ -2,19 +2,23 @@
 #include <HTTPClient.h>
 #include <LoRa.h>
 
-// Credenciais Wi-Fi
-const char* ssid = "SEU_SSID";
-const char* password = "SUA_SENHA";
+// =============================
+// Configurações da Rede Wi-Fi
+// =============================
+const char* ssid = "SEU_SSID";         // Substitua pelo seu SSID
+const char* password = "SUA_SENHA";    // Substitua pela sua senha
 
-// Token da API (ex.: Ubidots ou outro)
-const char* token = "SEU_TOKEN_API";
+// =============================
+// Configurações do InfluxDB
+// =============================
+const char* influx_url = "https://us-east-1-1.aws.cloud2.influxdata.com";
+const char* org = "UFSM"; // Nome da organização
+const char* bucket = "estacao_meteorologica"; // Nome do bucket
+const char* token = "xmlCVqD3CLpA_PNvENaiRpzYJVS_oCFJtgaa_i-4xpMpVhV3B-ekEbvavGL4xqwgQBHNVZ4UnOSPkTpAAI6oHA==";
 
-// Nome do dispositivo na nuvem
-const char* device_label = "esp32_gateway";
-
-// URL da API (ex.: Ubidots, Firebase, InfluxDB, etc.)
-const char* serverName = "http://industrial.api.ubidots.com/api/v1.6/devices/";
-
+// =============================
+// Função para conectar ao Wi-Fi
+// =============================
 void conectarWiFi() {
   if (WiFi.status() == WL_CONNECTED) return;
 
@@ -29,9 +33,9 @@ void conectarWiFi() {
   }
 
   if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("\nWi-Fi conectado!");
+    Serial.println("\n✅ Wi-Fi conectado!");
   } else {
-    Serial.println("\nFalha ao conectar no Wi-Fi.");
+    Serial.println("\n❌ Falha ao conectar no Wi-Fi.");
   }
 }
 
@@ -43,11 +47,11 @@ void setup() {
 
   // Inicializar LoRa
   while (!LoRa.begin(915E6)) {
-    Serial.println("Erro ao iniciar LoRa. Tentando novamente...");
+    Serial.println("❌ Erro ao iniciar LoRa. Tentando novamente...");
     delay(2000);
   }
 
-  Serial.println("LoRa receptor iniciado com sucesso!");
+  Serial.println("📡 LoRa receptor iniciado com sucesso!");
 }
 
 void loop() {
@@ -60,31 +64,33 @@ void loop() {
       dadoRecebido += (char)LoRa.read();
     }
 
-    Serial.print("Recebido via LoRa: ");
+    Serial.print("📥 Recebido via LoRa:\n");
     Serial.println(dadoRecebido);
 
-    // Enviar para a nuvem
+    // =============================
+    // Enviar dados ao InfluxDB
+    // =============================
     if (WiFi.status() == WL_CONNECTED) {
       HTTPClient http;
-      String url = String(serverName) + device_label;
+      String postUrl = String(influx_url) + "/api/v2/write?org=" + org + "&bucket=" + bucket + "&precision=s";
 
-      http.begin(url);
-      http.addHeader("Content-Type", "application/json");
-      http.addHeader("X-Auth-Token", token);
+      http.begin(postUrl);
+      http.addHeader("Authorization", "Token " + String(token));
+      http.addHeader("Content-Type", "text/plain");
 
       int httpResponseCode = http.POST(dadoRecebido);
 
       if (httpResponseCode > 0) {
-        Serial.print("Resposta da API: ");
+        Serial.print("✅ Dados enviados ao InfluxDB. Código: ");
         Serial.println(httpResponseCode);
       } else {
-        Serial.print("Erro na requisição HTTP: ");
+        Serial.print("❌ Erro na requisição HTTP: ");
         Serial.println(httpResponseCode);
       }
 
       http.end();
     } else {
-      Serial.println("Wi-Fi desconectado! Não foi possível enviar.");
+      Serial.println("⚠️ Wi-Fi desconectado! Não foi possível enviar.");
     }
   }
 
